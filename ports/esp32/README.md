@@ -224,6 +224,7 @@ FOLDER_MICROFREEZER=~/projects/microfreezer
 FOLDER_NODE=~/projects/insighioNode/insighioNode
 FOLDER_MICROPYTHON=~/projects/micropython
 
+
 rm -rf $FOLDER_TMP
 mkdir -p $FOLDER_TMP
 cd $FOLDER_MICROFREEZER
