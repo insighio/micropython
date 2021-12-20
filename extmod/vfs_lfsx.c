@@ -80,24 +80,27 @@ STATIC void MP_VFS_LFSx(init_config)(MP_OBJ_VFS_LFSx * self, mp_obj_t bdev, size
     int bc = MP_VFS_LFSx(dev_ioctl)(config, MP_BLOCKDEV_IOCTL_BLOCK_COUNT, 0, true); // get block count
     self->blockdev.block_size = bs;
 
-    config->read_size = read_size;
-    config->prog_size = prog_size;
-    config->block_size = bs;
-    config->block_count = bc;
 
-    #if LFS_BUILD_VERSION == 1
+    config->read_size = 2048; //read_size;
+    config->prog_size = 2048; //prog_size;
+    config->block_size = bs;  // ?
+    config->block_count = bc; // 1024
+
+#if LFS_BUILD_VERSION == 1
     config->lookahead = lookahead;
     config->read_buffer = m_new(uint8_t, config->read_size);
     config->prog_buffer = m_new(uint8_t, config->prog_size);
     config->lookahead_buffer = m_new(uint8_t, config->lookahead / 8);
-    #else
+#else
     config->block_cycles = 100;
-    config->cache_size = 4 * MAX(read_size, prog_size);
-    config->lookahead_size = lookahead;
+    config->cache_size = 2048;    //1024;
+    config->lookahead_size = 256; // lookahead;
     config->read_buffer = m_new(uint8_t, config->cache_size);
     config->prog_buffer = m_new(uint8_t, config->cache_size);
     config->lookahead_buffer = m_new(uint8_t, config->lookahead_size);
-    #endif
+
+    printf("readsize: %d, progsize: %d, blocksize: %d, blockcount: %d, lookahead: %d\n", config->read_size, config->prog_size, config->block_size, config->block_count, config->lookahead_size);
+#endif
 }
 
 const char *MP_VFS_LFSx(make_path)(MP_OBJ_VFS_LFSx * self, mp_obj_t path_in) {
