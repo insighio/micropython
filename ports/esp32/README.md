@@ -1,29 +1,28 @@
-MicroPython port to the ESP32
-=============================
+# MicroPython port to the ESP32
 
 This is a port of MicroPython to the Espressif ESP32 series of
-microcontrollers.  It uses the ESP-IDF framework and MicroPython runs as
+microcontrollers. It uses the ESP-IDF framework and MicroPython runs as
 a task under FreeRTOS.
 
 Supported features include:
-- REPL (Python prompt) over UART0.
-- 16k stack for the MicroPython task and approximately 100k Python heap.
-- Many of MicroPython's features are enabled: unicode, arbitrary-precision
-  integers, single-precision floats, complex numbers, frozen bytecode, as
-  well as many of the internal modules.
-- Internal filesystem using the flash (currently 2M in size).
-- The machine module with GPIO, UART, SPI, software I2C, ADC, DAC, PWM,
-  TouchPad, WDT and Timer.
-- The network module with WLAN (WiFi) support.
-- Bluetooth low-energy (BLE) support via the bluetooth module.
+
+-   REPL (Python prompt) over UART0.
+-   16k stack for the MicroPython task and approximately 100k Python heap.
+-   Many of MicroPython's features are enabled: unicode, arbitrary-precision
+    integers, single-precision floats, complex numbers, frozen bytecode, as
+    well as many of the internal modules.
+-   Internal filesystem using the flash (currently 2M in size).
+-   The machine module with GPIO, UART, SPI, software I2C, ADC, DAC, PWM,
+    TouchPad, WDT and Timer.
+-   The network module with WLAN (WiFi) support.
+-   Bluetooth low-energy (BLE) support via the bluetooth module.
 
 Initial development of this ESP32 port was sponsored in part by Microbric Pty Ltd.
 
-Setting up ESP-IDF and the build environment
---------------------------------------------
+## Setting up ESP-IDF and the build environment
 
 MicroPython on ESP32 requires the Espressif IDF version 4 (IoT development
-framework, aka SDK).  The ESP-IDF includes the libraries and RTOS needed to
+framework, aka SDK). The ESP-IDF includes the libraries and RTOS needed to
 manage the ESP32 microcontroller, as well as a way to manage the required
 build environment and toolchains needed to build the firmware.
 
@@ -75,11 +74,10 @@ $ source export.sh   # (or export.bat on Windows)
 The `install.sh` step only needs to be done once. You will need to source
 `export.sh` for every new session.
 
-Building the firmware
----------------------
+## Building the firmware
 
 The MicroPython cross-compiler must be built to pre-compile some of the
-built-in scripts to bytecode.  This can be done by (from the root of
+built-in scripts to bytecode. This can be done by (from the root of
 this repository):
 
 ```bash
@@ -99,7 +97,7 @@ subdirectory (this firmware image is made up of: bootloader.bin, partitions.bin
 and micropython.bin).
 
 To flash the firmware you must have your ESP32 module in the bootloader
-mode and connected to a serial port on your PC.  Refer to the documentation
+mode and connected to a serial port on your PC. Refer to the documentation
 for your particular ESP32 module for how to do this.
 You will also need to have user permissions to access the `/dev/ttyUSB0` device.
 On Linux, you can enable this by adding your user to the `dialout` group, and
@@ -125,7 +123,7 @@ $ make deploy
 ```
 
 The default ESP32 board build by the above commands is the `GENERIC` one, which
-should work on most ESP32 modules.  You can specify a different board by passing
+should work on most ESP32 modules. You can specify a different board by passing
 `BOARD=<board>` to the make commands, for example:
 
 ```bash
@@ -133,7 +131,7 @@ $ make BOARD=GENERIC_SPIRAM
 ```
 
 Note: the above "make" commands are thin wrappers for the underlying `idf.py`
-build tool that is part of the ESP-IDF.  You can instead use `idf.py` directly,
+build tool that is part of the ESP-IDF. You can instead use `idf.py` directly,
 for example:
 
 ```bash
@@ -142,11 +140,56 @@ $ idf.py -D MICROPY_BOARD=GENERIC_SPIRAM build
 $ idf.py flash
 ```
 
-Getting a Python prompt on the device
--------------------------------------
+## insigh.io specific
+
+### ESP32 WROVER 8MB flash
+
+Building and deploying for simple **ESP32 WROVER 8MB flash** default configuration:
+
+```bash
+make BOARD=GENERIC_SPIRAM PORT=/dev/ttyUSB0 deploy
+```
+
+### ESP32 WROVER 16MB flash
+
+To build for **ESP32 WROVER 16MB flash** do the following change and rebuild:
+
+```diff
+diff --git a/ports/esp32/boards/sdkconfig.base b/ports/esp32/boards/sdkconfig.base
+index 49336091a..58f0c1da8 100644
+--- a/ports/esp32/boards/sdkconfig.base
++++ b/ports/esp32/boards/sdkconfig.base
+@@ -52,11 +52,11 @@ CONFIG_ESP32_ULP_COPROC_ENABLED=y
+ CONFIG_PARTITION_TABLE_CUSTOM=y
+
+ # for ESP32 wrover terra
+-CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+-CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-8MiB.csv"
++#CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
++#CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-8MiB.csv"
+
+-#CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+-#CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-16MiB.csv"
++CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
++CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-16MiB.csv"
+
+ # To reduce iRAM usage
+ CONFIG_ESP32_WIFI_IRAM_OPT=n
+
+```
+
+### ESP32 S2 4MB flash
+
+To build for **ESP32 S2 4MB flash**, first boot the device in download mode to make the USB port available and the run the following:
+
+```bash
+make BOARD=GENERIC_S2 PORT=/dev/ttyACM0 deploy
+```
+
+## Getting a Python prompt on the device
 
 You can get a prompt via the serial port, via UART0, which is the same UART
-that is used for programming the firmware.  The baudrate for the REPL is
+that is used for programming the firmware. The baudrate for the REPL is
 115200 and you can use a command such as:
 
 ```bash
@@ -161,13 +204,12 @@ $ miniterm.py /dev/ttyUSB0 115200
 
 You can also use `idf.py monitor`.
 
-Configuring the WiFi and using the board
-----------------------------------------
+## Configuring the WiFi and using the board
 
 The ESP32 port is designed to be (almost) equivalent to the ESP8266 in
-terms of the modules and user-facing API.  There are some small differences,
+terms of the modules and user-facing API. There are some small differences,
 notably that the ESP32 does not automatically connect to the last access
-point when booting up.  But for the most part the documentation and tutorials
+point when booting up. But for the most part the documentation and tutorials
 for the ESP8266 should apply to the ESP32 (at least for the components that
 are implemented).
 
@@ -178,6 +220,7 @@ for a tutorial.
 The following function can be used to connect to a WiFi access point (you can
 either pass in your own SSID and password, or change the defaults so you can
 quickly call `wlan_connect()` and it just works):
+
 ```python
 def wlan_connect(ssid='MYSSID', password='MYPASS'):
     import network
@@ -192,35 +235,36 @@ def wlan_connect(ssid='MYSSID', password='MYPASS'):
 ```
 
 Note that some boards require you to configure the WiFi antenna before using
-the WiFi.  On Pycom boards like the LoPy and WiPy 2.0 you need to execute the
+the WiFi. On Pycom boards like the LoPy and WiPy 2.0 you need to execute the
 following code to select the internal antenna (best to put this line in your
 boot.py file):
+
 ```python
 import machine
 antenna = machine.Pin(16, machine.Pin.OUT, value=0)
 ```
 
-Defining a custom ESP32 board
------------------------------
+## Defining a custom ESP32 board
 
 The default ESP-IDF configuration settings are provided by the `GENERIC`
 board definition in the directory `boards/GENERIC`. For a custom configuration
-you can define your own board directory.  Start a new board configuration by
+you can define your own board directory. Start a new board configuration by
 copying an existing one (like `GENERIC`) and modifying it to suit your board.
 
 MicroPython specific configuration values are defined in the board-specific
-`mpconfigboard.h` file, which is included by `mpconfigport.h`.  Additional
+`mpconfigboard.h` file, which is included by `mpconfigport.h`. Additional
 settings are put in `mpconfigboard.cmake`, including a list of `sdkconfig`
-files that configure ESP-IDF settings.  Some standard `sdkconfig` files are
-provided in the `boards/` directory, like `boards/sdkconfig.ble`.  You can
+files that configure ESP-IDF settings. Some standard `sdkconfig` files are
+provided in the `boards/` directory, like `boards/sdkconfig.ble`. You can
 also define custom ones in your board directory.
 
 See existing board definitions for further examples of configuration.
 
 Configuration
 Troubleshooting
----------------
 
-* Continuous reboots after programming: Ensure `CONFIG_ESPTOOLPY_FLASHMODE` is
-  correct for your board (e.g. ESP-WROOM-32 should be DIO). Then perform a
-  `make clean`, rebuild, redeploy.
+---
+
+-   Continuous reboots after programming: Ensure `CONFIG_ESPTOOLPY_FLASHMODE` is
+    correct for your board (e.g. ESP-WROOM-32 should be DIO). Then perform a
+    `make clean`, rebuild, redeploy.
