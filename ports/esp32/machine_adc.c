@@ -44,6 +44,10 @@
 
 #define DEFAULT_VREF    1100
 
+#include "esp_adc_cal.h"
+
+#define DEFAULT_VREF    1100
+
 typedef struct _madc_obj_t {
     mp_obj_base_t base;
     gpio_num_t gpio_id;
@@ -237,6 +241,38 @@ STATIC mp_obj_t madc_init(mp_obj_t self_in, mp_obj_t atten_in, mp_obj_t width_in
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(madc_init_obj, madc_init);
 
+STATIC mp_obj_t madc_atten(mp_obj_t self_in, mp_obj_t atten_in);
+STATIC mp_obj_t madc_width(mp_obj_t cls_in, mp_obj_t width_in);
+
+// static void check_efuse(void)
+// {
+//     if (esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_TP) == ESP_OK) {
+//         printf("eFuse Two Point: Supported\n");
+//     } else {
+//         printf("eFuse Two Point: NOT supported\n");
+//     }
+//     //Check Vref is burned into eFuse
+//     if (esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_VREF) == ESP_OK) {
+//         printf("eFuse Vref: Supported\n");
+//     }
+// }
+
+
+// read_u16()
+STATIC mp_obj_t madc_init(mp_obj_t self_in, mp_obj_t atten_in, mp_obj_t width_in)
+{
+    if(!adc_chars){
+        adc_atten_t atten = mp_obj_get_int(atten_in);
+        adc_bits_width_t width = mp_obj_get_int(width_in);
+        adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
+        esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, atten, width, DEFAULT_VREF, adc_chars);
+        print_char_val_type(val_type);
+        return MP_OBJ_NEW_SMALL_INT(val_type);
+    }
+    return MP_OBJ_NEW_SMALL_INT(ESP_ADC_CAL_VAL_MAX);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(madc_init_obj, madc_init);
+
 // read_u16()
 STATIC mp_obj_t madc_read_u16(mp_obj_t self_in) {
     const madc_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -302,7 +338,6 @@ STATIC const mp_rom_map_elem_t madc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&madc_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_block), MP_ROM_PTR(&madc_block_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&madc_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&madc_read_u16_obj) },
     { MP_ROM_QSTR(MP_QSTR_read_uv), MP_ROM_PTR(&madc_read_uv_obj) },
     { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&madc_read_u16_obj) },
     { MP_ROM_QSTR(MP_QSTR_read_voltage), MP_ROM_PTR(&madc_read_voltage_obj) },
