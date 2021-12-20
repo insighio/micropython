@@ -192,6 +192,50 @@ To build for **ESP32 S2 4MB flash**, first boot the device in download mode to m
 make BOARD=GENERIC_S2 PORT=/dev/ttyACM0 deploy
 ```
 
+## How to update frozen modules using insigh.io microfreezer
+
+Using [microfreezer](https://github.com/insighio/microfreezer) it is easy to embed any type of file to the firmware. During the first run using the newly flashed firmware, all frozen files will be "unfrozen" to the flash directory as if the files were uploaded one by one.
+
+Lets assume the following paths:
+
+-   [insigh.io node code](https://github.com/insighio/insighioNode): **~/projects/insighioNode**
+-   [microfreezer](https://github.com/insighio/microfreezer): **~/projects/microfreezer**
+-   [insighio/micropython](https://github.com/insighio/micropython): **~/projects/micropython**
+
+Recommended microfreezer configuration:
+
+```
+{
+  "excludeList": [
+             "README",
+             "README.md",
+             "LICENSE",
+             ".git",
+             ".gitmodules",
+             "examples"],
+  "directoriesKeptInFrozen": [],
+  "enableZlibCompression": true,
+  "targetESP32": true,
+  "targetPycom": false
+}
+```
+
+To update the frozen modules to the latest code changes, run:
+
+```bash
+FOLDER_TMP=/tmp/tmpFirmwareFiles
+FOLDER_MICROFREEZER=~/projects/microfreezer
+FOLDER_NODE=~/projects/insighioNode/insighioNode
+FOLDER_MICROPYTHON=~/projects/micropython
+
+mkdir -p $FOLDER_TMP
+rm -rf $FOLDER_TMP
+cd $FOLDER_MICROFREEZER
+python3 microfreezer.py $FOLDER_NODE $FOLDER_TMP
+rm -rf $FOLDER_MICROPYTHON/ports/esp32/modules/_todefrost
+cp -r $FOLDER_TMP/_todefrost $FOLDER_MICROPYTHON/ports/esp32/modules/
+```
+
 ## Getting a Python prompt on the device
 
 You can get a prompt via the serial port, via UART0, which is the same UART
