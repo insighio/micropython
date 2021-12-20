@@ -40,6 +40,18 @@
 #define ADCBLOCK1 (&madcblock_obj[0])
 #define ADCBLOCK2 (&madcblock_obj[1])
 
+#include "esp_adc_cal.h"
+
+#define DEFAULT_VREF    1100
+
+typedef struct _madc_obj_t {
+    mp_obj_base_t base;
+    gpio_num_t gpio_id;
+    adc1_channel_t adc1_id;
+} madc_obj_t;
+
+static esp_adc_cal_characteristics_t *adc_chars = 0;
+
 STATIC const madc_obj_t madc_obj[] = {
     #if CONFIG_IDF_TARGET_ESP32
     {{&machine_adc_type}, ADCBLOCK1, ADC_CHANNEL_0, GPIO_NUM_36},
@@ -92,6 +104,19 @@ STATIC const madc_obj_t madc_obj[] = {
 };
 
 STATIC adc_atten_t madc_obj_atten[MP_ARRAY_SIZE(madc_obj)];
+
+static void print_char_val_type(esp_adc_cal_value_t val_type)
+{
+    if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
+        printf("Characterized using Two Point Value\n");
+    } else if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
+        printf("Characterized using eFuse Vref: %d\n", adc_chars->vref);
+    } else {
+        printf("Characterized using Default Vref\n");
+    }
+}
+
+STATIC uint8_t adc_bit_width;
 
 const madc_obj_t *madc_search_helper(madcblock_obj_t *block, adc_channel_t channel_id, gpio_num_t gpio_id) {
     for (int i = 0; i < MP_ARRAY_SIZE(madc_obj); i++) {
@@ -180,6 +205,39 @@ STATIC mp_obj_t madc_read(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(madc_read_obj, madc_read);
 
+STATIC mp_obj_t madc_atten(mp_obj_t self_in, mp_obj_t atten_in);
+STATIC mp_obj_t madc_width(mp_obj_t cls_in, mp_obj_t width_in);
+
+// static void check_efuse(void)
+// {
+//     if (esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_TP) == ESP_OK) {
+//         printf("eFuse Two Point: Supported\n");
+//     } else {
+//         printf("eFuse Two Point: NOT supported\n");
+//     }
+//     //Check Vref is burned into eFuse
+//     if (esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_VREF) == ESP_OK) {
+//         printf("eFuse Vref: Supported\n");
+//     }
+// }
+
+
+// read_u16()
+STATIC mp_obj_t madc_init(mp_obj_t self_in, mp_obj_t atten_in, mp_obj_t width_in)
+{
+    if(!adc_chars){
+        adc_atten_t atten = mp_obj_get_int(atten_in);
+        adc_bits_width_t width = mp_obj_get_int(width_in);
+        adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
+        esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, atten, width, DEFAULT_VREF, adc_chars);
+        print_char_val_type(val_type);
+        return MP_OBJ_NEW_SMALL_INT(val_type);
+    }
+    return MP_OBJ_NEW_SMALL_INT(ESP_ADC_CAL_VAL_MAX);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(madc_init_obj, madc_init);
+
+// read_u16()
 STATIC mp_obj_t madc_read_u16(mp_obj_t self_in) {
     const madc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t raw = madcblock_read_helper(self->block, self->channel_id);
@@ -194,6 +252,33 @@ STATIC mp_obj_t madc_read_uv(mp_obj_t self_in) {
     const madc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     adc_atten_t atten = madc_obj_atten[self - madc_obj];
     return MP_OBJ_NEW_SMALL_INT(madcblock_read_uv_helper(self->block, self->channel_id, atten));
+}
+
+// read_u16()
+STATIC mp_obj_t madc_read_voltage(mp_obj_t self_in, mp_obj_t samples_in)
+{
+    madc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    uint32_t numOfSamples = mp_obj_get_int(samples_in);
+
+    uint32_t adc_reading = 0;
+    //Multisampling
+    for (uint32_t i = 0; i < numOfSamples; i++) {
+        adc_reading += adc1_get_raw(self->adc1_id);
+    }
+    adc_reading /= numOfSamples;
+    uint32_t val = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
+    return MP_OBJ_NEW_SMALL_INT(val);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(madc_read_voltage_obj, madc_read_voltage);
+
+// Legacy method
+STATIC mp_obj_t madc_read(mp_obj_t self_in) {
+    madc_obj_t *self = self_in;
+    int val = adc1_get_raw(self->adc1_id);
+    if (val == -1) {
+        mp_raise_ValueError(MP_ERROR_TEXT("parameter error"));
+    }
+    return MP_OBJ_NEW_SMALL_INT(val);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(madc_read_uv_obj, madc_read_uv);
 
@@ -219,7 +304,8 @@ STATIC const mp_rom_map_elem_t madc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&madc_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&madc_read_u16_obj) },
     { MP_ROM_QSTR(MP_QSTR_read_uv), MP_ROM_PTR(&madc_read_uv_obj) },
-
+    { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&madc_read_u16_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read_voltage), MP_ROM_PTR(&madc_read_voltage_obj) },
     // Legacy API methods:
     { MP_ROM_QSTR(MP_QSTR_atten), MP_ROM_PTR(&madc_atten_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&madc_width_obj) },
