@@ -58,7 +58,7 @@ MicroPython and update the submodules using:
 
 ```bash
 $ cd esp-idf
-$ git checkout v4.2
+$ git checkout v4.2 # use v4.3 at least for ESP32-S2 builds
 $ git submodule update --init --recursive
 ```
 
@@ -222,8 +222,8 @@ FOLDER_MICROFREEZER=~/projects/microfreezer
 FOLDER_NODE=~/projects/insighioNode/insighioNode
 FOLDER_MICROPYTHON=~/projects/micropython
 
-mkdir -p $FOLDER_TMP
 rm -rf $FOLDER_TMP
+mkdir -p $FOLDER_TMP
 cd $FOLDER_MICROFREEZER
 python3 microfreezer.py $FOLDER_NODE $FOLDER_TMP
 rm -rf $FOLDER_MICROPYTHON/ports/esp32/modules/_todefrost
