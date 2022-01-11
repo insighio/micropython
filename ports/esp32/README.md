@@ -54,7 +54,7 @@ MicroPython and update the submodules using:
 
 ```bash
 $ cd esp-idf
-$ git checkout v4.4-dev
+$ git checkout v4.4
 $ git submodule update --init --recursive
 ```
 
@@ -223,7 +223,6 @@ FOLDER_TMP=/tmp/tmpFirmwareFiles
 FOLDER_MICROFREEZER=~/projects/microfreezer
 FOLDER_NODE=~/projects/insighioNode/insighioNode
 FOLDER_MICROPYTHON=~/projects/micropython
-
 
 rm -rf $FOLDER_TMP
 mkdir -p $FOLDER_TMP
