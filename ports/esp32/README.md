@@ -46,19 +46,15 @@ The steps to take are summarised below.
 To check out a copy of the IDF use git clone:
 
 ```bash
-$ git clone -b v4.0.2 --recursive https://github.com/espressif/esp-idf.git
+$ git clone -b v4.4-dev --recursive https://github.com/espressif/esp-idf.git
 ```
-
-You can replace `v4.0.2` with `v4.1.1` or `v4.2` or any other supported version.
-(You don't need a full recursive clone; see the `ci_esp32_setup` function in
-`tools/ci.sh` in this repository for more detailed set-up commands.)
 
 If you already have a copy of the IDF then checkout a version compatible with
 MicroPython and update the submodules using:
 
 ```bash
 $ cd esp-idf
-$ git checkout v4.2 # use v4.3 at least for ESP32-S2 builds
+$ git checkout v4.4-dev
 $ git submodule update --init --recursive
 ```
 
