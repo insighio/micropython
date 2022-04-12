@@ -68,7 +68,8 @@ typedef struct _rmt_install_state_t {
 
 // Current channel used for machine.bitstream, in the machine_bitstream_high_low_rmt
 // implementation.  A value of -1 means do not use RMT.
-int8_t esp32_rmt_bitstream_channel_id = RMT_CHANNEL_MAX - 1;
+// insigh.io note:changed this due to a bug, to allow leds to be properly controlled.
+int8_t esp32_rmt_bitstream_channel_id = 0; //RMT_CHANNEL_MAX - 1;
 
 STATIC void rmt_install_task(void *pvParameter) {
     rmt_install_state_t *state = pvParameter;
