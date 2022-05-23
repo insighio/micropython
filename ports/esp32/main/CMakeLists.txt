@@ -94,6 +94,7 @@ set(MICROPY_SOURCE_QSTR
 )
 
 set(IDF_COMPONENTS
+    esp_adc_cal
     app_update
     bootloader_support
     bt

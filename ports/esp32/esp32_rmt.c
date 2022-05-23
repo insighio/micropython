@@ -79,6 +79,12 @@ typedef struct _rmt_install_state_t {
     esp_err_t ret;
 } rmt_install_state_t;
 
+// Current channel used for machine.bitstream, in the machine_bitstream_high_low_rmt
+// implementation.  A value of -1 means do not use RMT.
+// insigh.io note:changed this due to a bug, to allow leds to be properly controlled.
+//int8_t esp32_rmt_bitstream_channel_id = 0; //RMT_CHANNEL_MAX - 1;
+
+
 STATIC void rmt_install_task(void *pvParameter) {
     rmt_install_state_t *state = pvParameter;
     state->ret = rmt_driver_install(state->channel_id, 0, 0);
@@ -127,7 +133,12 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_uint_t idle_level = args[3].u_bool;
     mp_obj_t tx_carrier_obj = args[4].u_obj;
 
-    if (esp32_rmt_bitstream_channel_id >= 0 && channel_id == esp32_rmt_bitstream_channel_id) {
+    if (
+    
+    
+    
+    
+    >= 0 && channel_id == esp32_rmt_bitstream_channel_id) {
         mp_raise_ValueError(MP_ERROR_TEXT("channel used by bitstream"));
     }
 
