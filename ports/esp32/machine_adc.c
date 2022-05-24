@@ -43,11 +43,11 @@
 
 #define DEFAULT_VREF    1100
 
-typedef struct _madc_obj_t {
-    mp_obj_base_t base;
-    gpio_num_t gpio_id;
-    adc1_channel_t adc1_id;
-} madc_obj_t;
+// typedef struct _madc_obj_t {
+//     mp_obj_base_t base;
+//     gpio_num_t gpio_id;
+//     adc1_channel_t channel_id;
+// } madc_obj_t;
 
 static esp_adc_cal_characteristics_t *adc_chars = 0;
 
@@ -234,19 +234,19 @@ STATIC mp_obj_t madc_width(mp_obj_t cls_in, mp_obj_t width_in);
 
 
 // read_u16()
-STATIC mp_obj_t madc_init(mp_obj_t self_in, mp_obj_t atten_in, mp_obj_t width_in)
-{
-    if(!adc_chars){
-        adc_atten_t atten = mp_obj_get_int(atten_in);
-        adc_bits_width_t width = mp_obj_get_int(width_in);
-        adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
-        esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, atten, width, DEFAULT_VREF, adc_chars);
-        print_char_val_type(val_type);
-        return MP_OBJ_NEW_SMALL_INT(val_type);
-    }
-    return MP_OBJ_NEW_SMALL_INT(ESP_ADC_CAL_VAL_MAX);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(madc_init_obj, madc_init);
+// STATIC mp_obj_t madc_init(mp_obj_t self_in, mp_obj_t atten_in, mp_obj_t width_in)
+// {
+//     if(!adc_chars){
+//         adc_atten_t atten = mp_obj_get_int(atten_in);
+//         adc_bits_width_t width = mp_obj_get_int(width_in);
+//         adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
+//         esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, atten, width, DEFAULT_VREF, adc_chars);
+//         print_char_val_type(val_type);
+//         return MP_OBJ_NEW_SMALL_INT(val_type);
+//     }
+//     return MP_OBJ_NEW_SMALL_INT(ESP_ADC_CAL_VAL_MAX);
+// }
+// STATIC MP_DEFINE_CONST_FUN_OBJ_3(madc_init_obj, madc_init);
 
 // read_u16()
 STATIC mp_obj_t madc_read_u16(mp_obj_t self_in) {
@@ -275,7 +275,7 @@ STATIC mp_obj_t madc_read_voltage(mp_obj_t self_in, mp_obj_t samples_in)
     uint32_t adc_reading = 0;
     //Multisampling
     for (uint32_t i = 0; i < numOfSamples; i++) {
-        adc_reading += adc1_get_raw(self->adc1_id);
+        adc_reading += adc1_get_raw(self->channel_id);
     }
     adc_reading /= numOfSamples;
     uint32_t val = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
@@ -283,15 +283,6 @@ STATIC mp_obj_t madc_read_voltage(mp_obj_t self_in, mp_obj_t samples_in)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(madc_read_voltage_obj, madc_read_voltage);
 
-// Legacy method
-STATIC mp_obj_t madc_read(mp_obj_t self_in) {
-    madc_obj_t *self = self_in;
-    int val = adc1_get_raw(self->adc1_id);
-    if (val == -1) {
-        mp_raise_ValueError(MP_ERROR_TEXT("parameter error"));
-    }
-    return MP_OBJ_NEW_SMALL_INT(val);
-}
 /////////////////to here
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(madc_read_uv_obj, madc_read_uv);
 

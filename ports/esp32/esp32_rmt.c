@@ -133,12 +133,7 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_uint_t idle_level = args[3].u_bool;
     mp_obj_t tx_carrier_obj = args[4].u_obj;
 
-    if (
-    
-    
-    
-    
-    >= 0 && channel_id == esp32_rmt_bitstream_channel_id) {
+    if (esp32_rmt_bitstream_channel_id >= 0 && channel_id == esp32_rmt_bitstream_channel_id) {
         mp_raise_ValueError(MP_ERROR_TEXT("channel used by bitstream"));
     }
 
