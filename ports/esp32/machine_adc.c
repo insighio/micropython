@@ -196,12 +196,27 @@ STATIC mp_obj_t madc_make_new(const mp_obj_type_t *type, size_t n_pos_args, size
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t madc_init(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t madc_init_mp(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     const madc_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     madc_init_helper(self, n_pos_args - 1, pos_args + 1, kw_args);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(madc_init_obj, 1, madc_init);
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(madc_init_mp_obj, 1, madc_init_mp);
+
+STATIC mp_obj_t madc_init(mp_obj_t self_in, mp_obj_t atten_in, mp_obj_t width_in)
+{
+    if(!adc_chars){
+        adc_atten_t atten = mp_obj_get_int(atten_in);
+        adc_bits_width_t width = mp_obj_get_int(width_in);
+        adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
+        esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, atten, width, DEFAULT_VREF, adc_chars);
+        print_char_val_type(val_type);
+        return MP_OBJ_NEW_SMALL_INT(val_type);
+    }
+    return MP_OBJ_NEW_SMALL_INT(ESP_ADC_CAL_VAL_MAX);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(madc_init_obj, madc_init);
 
 STATIC mp_obj_t madc_block(mp_obj_t self_in) {
     const madc_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -231,22 +246,6 @@ STATIC mp_obj_t madc_width(mp_obj_t cls_in, mp_obj_t width_in);
 //         printf("eFuse Vref: Supported\n");
 //     }
 // }
-
-
-// read_u16()
-// STATIC mp_obj_t madc_init(mp_obj_t self_in, mp_obj_t atten_in, mp_obj_t width_in)
-// {
-//     if(!adc_chars){
-//         adc_atten_t atten = mp_obj_get_int(atten_in);
-//         adc_bits_width_t width = mp_obj_get_int(width_in);
-//         adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
-//         esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, atten, width, DEFAULT_VREF, adc_chars);
-//         print_char_val_type(val_type);
-//         return MP_OBJ_NEW_SMALL_INT(val_type);
-//     }
-//     return MP_OBJ_NEW_SMALL_INT(ESP_ADC_CAL_VAL_MAX);
-// }
-// STATIC MP_DEFINE_CONST_FUN_OBJ_3(madc_init_obj, madc_init);
 
 // read_u16()
 STATIC mp_obj_t madc_read_u16(mp_obj_t self_in) {
@@ -304,6 +303,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(madc_width_obj, madc_width);
 
 STATIC const mp_rom_map_elem_t madc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&madc_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_init_mp), MP_ROM_PTR(&madc_init_mp_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_block), MP_ROM_PTR(&madc_block_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&madc_read_obj) },
