@@ -176,13 +176,25 @@ mp_int_t madcblock_read_helper(madcblock_obj_t *self, adc_channel_t channel_id) 
     return raw;
 }
 
+static void print_char_val_type(esp_adc_cal_value_t val_type,  esp_adc_cal_characteristics_t *adc_chars)
+{
+    if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
+        printf("Characterized using Two Point Value\n");
+    } else if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
+        printf("Characterized using eFuse Vref: %d\n", adc_chars->vref);
+    } else {
+        printf("Characterized using Default Vref\n");
+    }
+}
+
 mp_int_t madcblock_read_uv_helper(madcblock_obj_t *self, adc_channel_t channel_id, adc_atten_t atten) {
     int raw = madcblock_read_helper(self, channel_id);
     esp_adc_cal_characteristics_t *adc_chars = self->characteristics[atten];
     if (adc_chars == NULL) {
         adc_chars = malloc(sizeof(esp_adc_cal_characteristics_t));
-        esp_adc_cal_characterize(self->unit_id, atten, self->width, DEFAULT_VREF, adc_chars);
+        esp_adc_cal_value_t val_type = esp_adc_cal_characterize(self->unit_id, atten, self->width, DEFAULT_VREF, adc_chars);
         self->characteristics[atten] = adc_chars;
+        print_char_val_type(val_type, adc_chars);
     }
     mp_int_t uv = esp_adc_cal_raw_to_voltage(raw, adc_chars) * 1000;
     return uv;

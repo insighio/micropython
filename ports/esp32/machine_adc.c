@@ -43,12 +43,6 @@
 
 #define DEFAULT_VREF    1100
 
-// typedef struct _madc_obj_t {
-//     mp_obj_base_t base;
-//     gpio_num_t gpio_id;
-//     adc1_channel_t channel_id;
-// } madc_obj_t;
-
 static esp_adc_cal_characteristics_t *adc_chars = 0;
 
 STATIC const madc_obj_t madc_obj[] = {
@@ -106,17 +100,6 @@ STATIC const madc_obj_t madc_obj[] = {
 // The madc_atten_get/madc_atten_set functions store (atten+1) here so that the uninitialised state
 // can be distinguished from the initialised state.
 STATIC uint8_t madc_obj_atten[MP_ARRAY_SIZE(madc_obj)];
-
-static void print_char_val_type(esp_adc_cal_value_t val_type)
-{
-    if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
-        printf("Characterized using Two Point Value\n");
-    } else if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
-        printf("Characterized using eFuse Vref: %d\n", adc_chars->vref);
-    } else {
-        printf("Characterized using Default Vref\n");
-    }
-}
 
 STATIC uint8_t adc_bit_width;
 
@@ -206,12 +189,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(madc_init_mp_obj, 1, madc_init_mp);
 
 STATIC mp_obj_t madc_init(mp_obj_t self_in, mp_obj_t atten_in, mp_obj_t width_in)
 {
+     madc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if(!adc_chars){
         adc_atten_t atten = mp_obj_get_int(atten_in);
         adc_bits_width_t width = mp_obj_get_int(width_in);
         adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
-        esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, atten, width, DEFAULT_VREF, adc_chars);
-        print_char_val_type(val_type);
+        esp_adc_cal_value_t val_type = esp_adc_cal_characterize(self->block->unit_id, atten, width, DEFAULT_VREF, adc_chars);
         return MP_OBJ_NEW_SMALL_INT(val_type);
     }
     return MP_OBJ_NEW_SMALL_INT(ESP_ADC_CAL_VAL_MAX);
@@ -270,15 +253,16 @@ STATIC mp_obj_t madc_read_voltage(mp_obj_t self_in, mp_obj_t samples_in)
 {
     madc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint32_t numOfSamples = mp_obj_get_int(samples_in);
+    adc_atten_t atten = madc_atten_get(self);
 
     uint32_t adc_reading = 0;
     //Multisampling
     for (uint32_t i = 0; i < numOfSamples; i++) {
-        adc_reading += adc1_get_raw(self->channel_id);
+        adc_reading += madcblock_read_uv_helper(self->block, self->channel_id, atten) / 1000;
     }
     adc_reading /= numOfSamples;
-    uint32_t val = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
-    return MP_OBJ_NEW_SMALL_INT(val);
+    //uint32_t val = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
+    return MP_OBJ_NEW_SMALL_INT(adc_reading);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(madc_read_voltage_obj, madc_read_voltage);
 
