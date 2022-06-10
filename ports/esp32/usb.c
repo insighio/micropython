@@ -29,7 +29,7 @@
 #include "usb.h"
 
 
-//#if CONFIG_USB_ENABLED
+#if CONFIG_USB_ENABLED
 
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
@@ -93,7 +93,7 @@ void usb_tx_strn(const char *str, size_t len) {
     //tud_cdc_n_write_flush(CDC_ITF);
     //tud_cdc_n_read_flush(CDC_ITF);
 
-    tud_cdc_n_write_clear(CDC_ITF);
+    //tud_cdc_n_write_clear(CDC_ITF);
 
     // esp_tusb_cdc_t *cdc_inst = tinyusb_cdc_get_intf(CDC_ITF);
     // if (cdc_inst != NULL) {
@@ -108,4 +108,4 @@ void usb_tx_strn(const char *str, size_t len) {
     }
 }
 
-//#endif // CONFIG_USB_ENABLED
+#endif // CONFIG_USB_ENABLED
