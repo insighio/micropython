@@ -28,8 +28,8 @@
 
 // Current version of MicroPython
 #define MICROPY_VERSION_MAJOR 1
-#define MICROPY_VERSION_MINOR 18
-#define MICROPY_VERSION_MICRO 0
+#define MICROPY_VERSION_MINOR 19
+#define MICROPY_VERSION_MICRO 1
 
 // Combined version as a 32-bit number for convenience
 #define MICROPY_VERSION ( \
@@ -359,11 +359,6 @@
 // Whether to enable the thumb inline assembler
 #ifndef MICROPY_EMIT_INLINE_THUMB
 #define MICROPY_EMIT_INLINE_THUMB (0)
-#endif
-
-// Whether to enable ARMv7-M instruction support in the Thumb2 inline assembler
-#ifndef MICROPY_EMIT_INLINE_THUMB_ARMV7M
-#define MICROPY_EMIT_INLINE_THUMB_ARMV7M (1)
 #endif
 
 // Whether to enable float support in the Thumb2 inline assembler
@@ -1588,6 +1583,11 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_MACHINE_I2C
 #define MICROPY_PY_MACHINE_I2C (0)
+#endif
+
+// Whether the low-level I2C transfer function supports a separate write as the first transfer
+#ifndef MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1
+#define MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1 (0)
 #endif
 
 // Whether to provide the "machine.SoftI2C" class

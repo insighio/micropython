@@ -30,6 +30,13 @@
 #define MICROPY_EMIT_XTENSAWIN              (1)
 #endif
 
+// workaround for xtensa-esp32-elf-gcc esp-2020r3, which can generate wrong code for loops
+// see https://github.com/espressif/esp-idf/issues/9130
+// this was fixed in newer versions of the compiler by:
+//   "gas: use literals/const16 for xtensa loop relaxation"
+//   https://github.com/jcmvbkbc/binutils-gdb-xtensa/commit/403b0b61f6d4358aee8493cb1d11814e368942c9
+#define MICROPY_COMP_CONST_FOLDING_COMPILER_WORKAROUND (1)
+
 // optimisations
 #define MICROPY_OPT_COMPUTED_GOTO           (1)
 
@@ -87,6 +94,7 @@
 #define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS  (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/esp32/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C              (1)
+#define MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1 (1)
 #define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SPI_MSB          (0)
@@ -125,16 +133,6 @@
 #define MICROPY_FATFS_LFN_CODE_PAGE         437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define mp_type_fileio                      mp_type_vfs_fat_fileio
 #define mp_type_textio                      mp_type_vfs_fat_textio
-
-// use vfs's functions for import stat and builtin open
-#define mp_import_stat mp_vfs_import_stat
-#define mp_builtin_open mp_vfs_open
-#define mp_builtin_open_obj mp_vfs_open_obj
-
-// extra built in names to add to the global namespace
-#define MICROPY_PORT_BUILTINS \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
 #define MP_STATE_PORT MP_STATE_VM
 
