@@ -47,6 +47,7 @@
 #include "gccollect.h"
 #include "irq.h"
 #include "powerctrl.h"
+#include "boardctrl.h"
 #include "pybthread.h"
 #include "storage.h"
 #include "pin.h"
@@ -55,6 +56,7 @@
 #include "spi.h"
 #include "uart.h"
 
+#if MICROPY_PY_MACHINE
 
 #define PYB_RESET_SOFT      (0)
 #define PYB_RESET_POWER_ON  (1)
@@ -181,12 +183,14 @@ STATIC mp_obj_t machine_soft_reset(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
 // Activate the bootloader without BOOT* pins.
-STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
+NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_HW_ENABLE_STORAGE
     storage_flush();
     #endif
 
     __disable_irq();
+
+    MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
 
     #if MICROPY_HW_USES_BOOTLOADER
     // ToDo: need to review how to implement
@@ -302,3 +306,7 @@ const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+
+#endif // MICROPY_PY_MACHINE

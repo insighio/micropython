@@ -514,6 +514,22 @@ STATIC int read_mem(mp_obj_t self_in, uint16_t addr, uint32_t memaddr, uint8_t a
     uint8_t memaddr_buf[4];
     size_t memaddr_len = fill_memaddr_buf(&memaddr_buf[0], memaddr, addrsize);
 
+    #if MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1
+    // The I2C transfer function may support the MP_MACHINE_I2C_FLAG_WRITE1 option
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)self->type->protocol;
+    if (i2c_p->transfer_supports_write1) {
+        // Create partial write and read buffers
+        mp_machine_i2c_buf_t bufs[2] = {
+            {.len = memaddr_len, .buf = memaddr_buf},
+            {.len = len, .buf = buf},
+        };
+
+        // Do write+read I2C transfer
+        return i2c_p->transfer(self, addr, 2, bufs,
+            MP_MACHINE_I2C_FLAG_WRITE1 | MP_MACHINE_I2C_FLAG_READ | MP_MACHINE_I2C_FLAG_STOP);
+    }
+    #endif
+
     int ret = mp_machine_i2c_writeto(self, addr, memaddr_buf, memaddr_len, false);
     if (ret != memaddr_len) {
         // must generate STOP
