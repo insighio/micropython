@@ -176,12 +176,30 @@ mp_int_t madcblock_read_helper(madcblock_obj_t *self, adc_channel_t channel_id) 
     return raw;
 }
 
+static void check_efuse(int cal_type)
+{
+    esp_err_t ret;
+
+    //Check Vref is burned into eFuse
+    ret = esp_adc_cal_check_efuse(cal_type);
+    if (ret == ESP_OK) {
+        printf("Calibration [%d] supported\n", cal_type);
+    }
+    else if (ret == ESP_ERR_NOT_SUPPORTED) {
+        printf("Calibration scheme [%d] not supported, skip software calibration\n", cal_type);
+    } else if (ret == ESP_ERR_INVALID_VERSION) {
+        printf("eFuse [%d] not burnt, skip software calibration\n", cal_type);
+    }
+}
+
 static void print_char_val_type(esp_adc_cal_value_t val_type,  esp_adc_cal_characteristics_t *adc_chars)
 {
     if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
         printf("Characterized using Two Point Value\n");
     } else if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
         printf("Characterized using eFuse Vref: %d\n", adc_chars->vref);
+    } else if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP_FIT) {
+        printf("Characterized using eFuse tp fit\n");
     } else {
         printf("Characterized using Default Vref\n");
     }
@@ -191,6 +209,12 @@ mp_int_t madcblock_read_uv_helper(madcblock_obj_t *self, adc_channel_t channel_i
     int raw = madcblock_read_helper(self, channel_id);
     esp_adc_cal_characteristics_t *adc_chars = self->characteristics[atten];
     if (adc_chars == NULL) {
+        check_efuse(ESP_ADC_CAL_VAL_EFUSE_VREF);
+        check_efuse(ESP_ADC_CAL_VAL_EFUSE_TP);
+        check_efuse(ESP_ADC_CAL_VAL_DEFAULT_VREF);
+        check_efuse(ESP_ADC_CAL_VAL_EFUSE_TP_FIT);
+        check_efuse(ESP_ADC_CAL_VAL_MAX);
+
         adc_chars = malloc(sizeof(esp_adc_cal_characteristics_t));
         esp_adc_cal_value_t val_type = esp_adc_cal_characterize(self->unit_id, atten, self->width, DEFAULT_VREF, adc_chars);
         self->characteristics[atten] = adc_chars;
