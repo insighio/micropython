@@ -22,7 +22,7 @@
 #endif
 
 // memory allocation policies
-#define MICROPY_ALLOC_PATH_MAX              (128)
+#define MICROPY_ALLOC_PATH_MAX              (256)
 
 // emitters
 #define MICROPY_PERSISTENT_CODE_LOAD        (1)
@@ -47,7 +47,6 @@
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_NORMAL)
 #define MICROPY_WARNINGS                    (1)
-//#define MICROPY_FLOAT_IMPL                  (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_FLOAT_IMPL                  (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_STREAMS_POSIX_API           (1)
 #define MICROPY_MODULE_FROZEN_STR           (0)
@@ -61,7 +60,8 @@
 // control over Python builtins
 #define MICROPY_PY_STR_BYTES_CMP_WARN       (1)
 #define MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS (1)
-#define MICROPY_PY_BUILTINS_HELP_TEXT       esp32_help_text
+#define MICROPY_PY_BUILTINS_HELP            (0)
+// -define MICROPY_PY_BUILTINS_HELP_TEXT       esp32_help_text
 #define MICROPY_PY_IO_BUFFEREDWRITER        (1)
 #define MICROPY_PY_UTIME_MP_HAL             (1)
 #define MICROPY_PY_THREAD                   (1)
@@ -69,16 +69,10 @@
 #define MICROPY_PY_THREAD_GIL_VM_DIVISOR    (32)
 
 // extended modules
-#ifndef MICROPY_PY_BLUETOOTH
-#define MICROPY_PY_BLUETOOTH                (1)
-#define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
-#define MICROPY_BLUETOOTH_NIMBLE            (1)
-#define MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY (1)
-#endif
 #define MICROPY_PY_UTIMEQ                   (1)
-#define MICROPY_PY_UHASHLIB_SHA1            (1)
-#define MICROPY_PY_UHASHLIB_SHA256          (1)
-#define MICROPY_PY_UCRYPTOLIB               (1)
+#define MICROPY_PY_UHASHLIB_SHA1            (0)
+#define MICROPY_PY_UHASHLIB_SHA256          (0)
+#define MICROPY_PY_UCRYPTOLIB               (0)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC   (esp_random())
 #define MICROPY_PY_UOS_INCLUDEFILE          "ports/esp32/moduos.c"
 #define MICROPY_PY_OS_DUPTERM               (1)
@@ -107,25 +101,33 @@
 #ifndef MICROPY_PY_MACHINE_I2S
 #define MICROPY_PY_MACHINE_I2S              (1)
 #endif
-#ifndef MICROPY_PY_NETWORK_WLAN
+// #define MICROPY_PY_NETWORK                  (0)
+// #define MICROPY_PY_NETWORK_WLAN             (0)
+#define MICROPY_PY_NETWORK                  (0)
 #define MICROPY_PY_NETWORK_WLAN             (1)
-#endif
-#ifndef MICROPY_HW_ENABLE_SDCARD
 #define MICROPY_HW_ENABLE_SDCARD            (1)
-#endif
 #define MICROPY_HW_SOFTSPI_MIN_DELAY        (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (ets_get_cpu_frequency() * 1000000 / 200) // roughly
+// #define MICROPY_PY_USSL                     (0)
+// #define MICROPY_SSL_MBEDTLS                 (0)
+// #define MICROPY_PY_USSL_FINALISER           (0)
 #define MICROPY_PY_USSL                     (1)
 #define MICROPY_SSL_MBEDTLS                 (1)
 #define MICROPY_PY_USSL_FINALISER           (1)
+//#define MICROPY_PY_UWEBSOCKET               (0)
+//#define MICROPY_PY_WEBREPL                  (0)
+
+///testing ---->
 #define MICROPY_PY_UWEBSOCKET               (1)
 #define MICROPY_PY_WEBREPL                  (1)
 #define MICROPY_PY_BTREE                    (1)
 #define MICROPY_PY_ONEWIRE                  (1)
 #define MICROPY_PY_UPLATFORM                (1)
 #define MICROPY_PY_USOCKET_EVENTS           (MICROPY_PY_WEBREPL)
-#define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
-#define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME ("ESP32")
+//////<---
+#define MICROPY_PY_ONEWIRE                  (1)
+#define MICROPY_PY_UPLATFORM                (1)
+//// -define MICROPY_PY_USOCKET_EVENTS           (MICROPY_PY_WEBREPL)
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN            (1)
@@ -138,22 +140,12 @@
 #define MP_STATE_PORT MP_STATE_VM
 
 struct _machine_timer_obj_t;
-
-#if MICROPY_BLUETOOTH_NIMBLE
-struct mp_bluetooth_nimble_root_pointers_t;
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE struct _mp_bluetooth_nimble_root_pointers_t *bluetooth_nimble_root_pointers;
-#else
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
-#endif
-
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     mp_obj_t machine_pin_irq_handler[40]; \
     struct _machine_timer_obj_t *machine_timer_obj_head; \
     struct _machine_i2s_obj_t *machine_i2s_obj[I2S_NUM_MAX]; \
-    mp_obj_t native_code_pointers; \
-    MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
-
+    mp_obj_t native_code_pointers;
 // type definitions for the specific machine
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
@@ -173,7 +165,6 @@ void *esp_native_code_commit(void *, size_t, void *);
 #else
 #define MICROPY_PY_USOCKET_EVENTS_HANDLER
 #endif
-
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
@@ -216,18 +207,9 @@ typedef long mp_off_t;
 // board specifics
 #define MICROPY_PY_SYS_PLATFORM "esp32"
 
-// ESP32-S3 extended IO for 47 & 48
-#ifndef MICROPY_HW_ESP32S3_EXTENDED_IO
-#define MICROPY_HW_ESP32S3_EXTENDED_IO      (1)
-#endif
+#define MICROPY_PY_NETWORK_LAN              (1)
 
-#ifndef MICROPY_HW_ENABLE_MDNS_QUERIES
-#define MICROPY_HW_ENABLE_MDNS_QUERIES      (1)
-#endif
-
-#ifndef MICROPY_HW_ENABLE_MDNS_RESPONDER
-#define MICROPY_HW_ENABLE_MDNS_RESPONDER    (1)
-#endif
+//#define MICROPY_PY_USOCKET_EVENTS_HANDLER
 
 #ifndef MICROPY_BOARD_STARTUP
 #define MICROPY_BOARD_STARTUP boardctrl_startup

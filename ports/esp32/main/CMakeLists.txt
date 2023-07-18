@@ -49,6 +49,8 @@ set(MICROPY_SOURCE_DRIVERS
 
 set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/main.c
+    ${PROJECT_DIR}/bt_spp_client.c
+    ${PROJECT_DIR}/bt_spp_server.c
     ${PROJECT_DIR}/uart.c
     ${PROJECT_DIR}/usb.c
     ${PROJECT_DIR}/usb_serial_jtag.c
@@ -98,7 +100,6 @@ set(MICROPY_SOURCE_QSTR
 )
 
 set(IDF_COMPONENTS
-    esp_adc_cal
     app_update
     bootloader_support
     bt

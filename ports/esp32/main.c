@@ -215,7 +215,7 @@ soft_reset_exit:
     // TODO: machine_rmt_deinit_all();
     machine_pins_deinit();
     machine_deinit();
-    usocket_events_deinit();
+    //usocket_events_deinit();
 
     mp_deinit();
     fflush(stdout);

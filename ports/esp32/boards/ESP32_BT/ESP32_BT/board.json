@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BT",
+        "SPIRAM",
+        "WiFi"
+    ],
+    "id": "esp32spiram_bt",
+    "images": [
+        "esp32_psram.jpg"
+    ],
+    "mcu": "esp32",
+    "product": "ESP32_BT with SPIRAM",
+    "thumbnail": "",
+    "url": "https://www.espressif.com/en/products/modules",
+    "variants": {
+        "idf3": "Compiled with IDF 3.x"
+    },
+    "vendor": "Espressif"
+}
