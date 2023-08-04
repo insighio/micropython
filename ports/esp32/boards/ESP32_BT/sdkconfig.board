@@ -1,5 +1,5 @@
 # DEBUGGING
-#CONFIG_LOG_DEFAULT_LEVEL=none 
+CONFIG_LOG_DEFAULT_LEVEL=LOG_DEFAULT_LEVEL_NONE 
 
 # Override some defaults so BT stack is enabled
 CONFIG_BT_ENABLED=y

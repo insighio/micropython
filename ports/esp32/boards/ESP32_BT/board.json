@@ -5,15 +5,14 @@
     "docs": "",
     "features": [
         "BT",
-        "SPIRAM",
         "WiFi"
     ],
-    "id": "esp32spiram_bt",
+    "id": "esp32_bt",
     "images": [
         "esp32_psram.jpg"
     ],
     "mcu": "esp32",
-    "product": "ESP32_BT with SPIRAM",
+    "product": "ESP32_BT",
     "thumbnail": "",
     "url": "https://www.espressif.com/en/products/modules",
     "variants": {
