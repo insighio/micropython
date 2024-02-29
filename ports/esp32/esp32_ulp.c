@@ -119,7 +119,9 @@ STATIC mp_obj_t esp32_ulp_init_gpio(mp_obj_t self_in, mp_obj_t gpio_num_in)
 
     rtc_gpio_init(gpio_num);
     rtc_gpio_set_direction(gpio_num, RTC_GPIO_MODE_INPUT_ONLY);
-    rtc_gpio_pulldown_en(gpio_num);
+
+    // no pull up/down is needed if shield is present with clear signal
+    rtc_gpio_pulldown_dis(gpio_num);
     rtc_gpio_pullup_dis(gpio_num);
     rtc_gpio_hold_en(gpio_num);
 
