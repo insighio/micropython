@@ -4,6 +4,6 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.base
     boards/sdkconfig.spiram_sx
     boards/sdkconfig.240mhz
-    boards/GENERIC_S3_SPIRAM/sdkconfig.board
+    boards/GENERIC_S3_SPIRAM_4MB/sdkconfig.board
     boards/sdkconfig.usb
 )

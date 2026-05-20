@@ -1,2 +1,3 @@
 # SPIRAM increases the size of the firmware, use -Os to reduce it again to fit in iram
 CONFIG_COMPILER_OPTIMIZATION_SIZE=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-4MiB-esp32.csv"
